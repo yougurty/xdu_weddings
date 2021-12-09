@@ -1,6 +1,10 @@
+import base64
+import hmac
 import json
 import traceback
 import datetime
+from hashlib import md5
+import time
 from flask import Flask,request,jsonify
 import pymysql
 
@@ -72,16 +76,24 @@ def get_all_msg():
     return jsonify(result)
 
 
-#
-# #登录注册
-@app.route('/signin', methods = ['POST'])
-def signin():
+# 登录注册
+@app.route('/login', methods = ['POST'])
+def login():
     data = json.loads(request.get_data(as_text=True))
     code = data['code']
     appid = 'appID'  # 开发者关于微信小程序的appID
     appSercet = 'appSecret'  # 开发者关于微信小程序的appSecret
+    # 向微信接口服务发送请求
     api = 'https://api.weixin.qq.com/sns/jscode2session?appid='+appid+'&secret='+appSercet+'&js_code='+code+'&grant_type=authorization_code'
-    request.get(api)
+    response_data = request.get(api)
+    openid = resData['openid']  # 得到用户关于当前小程序的OpenID
+    session_key = resData['session_key']  # 得到用户关于当前小程序的会话密钥session_key
+    # 下面生成自定义状态：token，用session_key和openid,
+    token = generate_token(openid+session_key, expire=3600)
+    return
+
+
+
 
 @app.route('/')
 def hello():
