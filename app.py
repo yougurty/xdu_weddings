@@ -26,13 +26,17 @@ def addnew_msg():  # put application's code here
         try:
             print("测试")
             # post_data = request.get_json()
-            print(request.args)
-            post_data = request.args;
-            print(post_data)
-            wedding_id = post_data['wedding_id']
-            nickname = post_data['nickname']
-            headshots = post_data['headshots']
-            context = post_data['context']
+            # print(request.args)
+            # post_data = request.values;
+            # print(post_data)
+            # post_data = json.loads(request.get_data(as_text=True))
+            # print(post_data)
+            post_data = json.loads(request.get_data().decode('utf-8'))
+            wedding_id = post_data[0]['wedding_id']
+            print(wedding_id)
+            nickname = post_data[0]['nickname']
+            headshots = post_data[0]['headshots']
+            context = post_data[0]['context']
             time = datetime.datetime.now().strftime('%Y-%m-%d %T')
             print(time)
             db = connectdb()
@@ -66,9 +70,18 @@ def get_all_msg():
     print(result)
     db.close()
     return jsonify(result)
-        #json.dumps(result, ensure_ascii=False)
 
 
+#
+# #登录注册
+@app.route('/signin', methods = ['POST'])
+def signin():
+    data = json.loads(request.get_data(as_text=True))
+    code = data['code']
+    appid = 'appID'  # 开发者关于微信小程序的appID
+    appSercet = 'appSecret'  # 开发者关于微信小程序的appSecret
+    api = 'https://api.weixin.qq.com/sns/jscode2session?appid='+appid+'&secret='+appSercet+'&js_code='+code+'&grant_type=authorization_code'
+    request.get(api)
 
 @app.route('/')
 def hello():
