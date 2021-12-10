@@ -48,18 +48,18 @@ def addnew_msg():  # put application's code here
                 with db.cursor() as cursor:
                     # 创建一条新的记录
                     sql = "INSERT INTO `messages` (`wedding_id`, `nickname`,`headshots`,`context`,`time`) VALUES (%s, %s, %s, %s, %s)"
-                    cursor.execute(sql,(wedding_id,nickname,headshots,context,time))
+                    cursor.execute(sql, (wedding_id, nickname, headshots, context, time))
                     print("有没有查询")
                 db.commit()
                 print("有没有提交")
             finally:
                 db.close()
                 print("结束了")
-            message = {'status':'success'}
+            message = {'status': 'success'}
         except Exception as e:
             traceback.print.exc()
             print("异常了没")
-            return jsonify({'status':'fail'})
+            return jsonify({'status': 'fail'})
         else:
             return jsonify(message)
 
@@ -79,17 +79,47 @@ def get_all_msg():
 @app.route('/findweddings',methods = ['GET'])
 def find_weddings():
     # 从前端得到一个wedding_id
-    data = request.values;
+    data = request.values
     wedding_id = data['wedding_id']
     db = connectdb()
     c = db.cursor()
     c.execute('select wedding_id,nickname from weddings where wedding_id = %s', wedding_id)
-    print(c.fetchone())
+    if c.fetchone() == None:    # 获取符合条件的第一个值的所有信息,返回结果类型为元组，如果查询不到，则返回None
+        a = 0
+    else:
+        a = 1
     c.close()
     db.close()
-    msg = {'result': wedding_id}
-    return msg
+    if a == 1:
+        return jsonify({'status': 'success'})
+    else:
+        return jsonify({'status': 'fail'})
 
+# 导航页
+@app.route('/navigation', methods = ['GET'])
+def navigator():
+    data = request.values
+    wedding_id = data['wedding_id']
+    print(wedding_id)
+    db = connectdb()
+    c = db.cursor()
+    c.execute('select longtitute,latitute,content from navigation where wedding_id = %s', wedding_id)
+    result = c.fetchone()   #获取到经纬度和内容
+    print(result)
+    longtitute = result[0]
+    print(longtitute)
+    latitute = result[1]
+    print(latitute)
+    content = result[2]
+    print(content)
+    c.close()
+    db.close()
+    data = {
+        "longtitute": longtitute,
+        "latitute": latitute,
+        "content": content
+    }
+    return jsonify(data)
 
 
 # #获得token，key: str (用户给定的key，需要用户保存以便之后验证token,每次产生token时的key 都可以是同一个key)，expire: int(最大有效时间，单位为s)
