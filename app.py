@@ -75,56 +75,73 @@ def get_all_msg():
     db.close()
     return jsonify(result)
 
-#获得token，key: str (用户给定的key，需要用户保存以便之后验证token,每次产生token时的key 都可以是同一个key)，expire: int(最大有效时间，单位为s)
-def generate_token(key, expire=3600):
-    ts_str = str(time.time() + expire)
-    ts_byte = ts_str.encode("utf-8")        #时间戳
-    sha1_tshexstr = hmac.new(key.encode("utf-8"),ts_byte,'sha1').hexdigest()
-    token = ts_str+':'+sha1_tshexstr
-    b64_token = base64.urlsafe_b64encode(token.encode("utf-8"))
-    return b64_token.decode("utf-8")
+# 查询有无wedding_id存在
+@app.route('/findweddings',methods = ['GET'])
+def find_weddings():
+    # 从前端得到一个wedding_id
+    data = request.values;
+    wedding_id = data['wedding_id']
+    db = connectdb()
+    c = db.cursor()
+    c.execute('select wedding_id,nickname from weddings where wedding_id = %s', wedding_id)
+    print(c.fetchone())
+    c.close()
+    db.close()
+    msg = {'result': wedding_id}
+    return msg
 
-# 验证token
-def certify_token(key, token):
-    token_str = base64.urlsafe_b64decode(token).decode('utf-8')     #解码
-    token_list = token_str.split(':')
-    if len(token_list) != 2:
-        return False
-    ts_str = token_list[0]
-    if float(ts_str) < time.time(): #判断是否过期
-    # token expired
-        return False
-    known_sha1_tsstr = token_list[1]
-    sha1 = hmac.new(key.encode("utf-8"),ts_str.encode('utf-8'),'sha1')
-    calc_sha1_tsstr = sha1.hexdigest()
-    if calc_sha1_tsstr != known_sha1_tsstr:
-    # token certification failed
-        return False
-    # token certification success
-    else:
-        return True
 
-# 登录注册
-@app.route('/login', methods = ['POST'])
-def login():
-    data = json.loads(request.get_data(as_text=True))
-    code = data['code']
-    appid = 'appID'  # 开发者关于微信小程序的appID
-    appSercet = 'appSecret'  # 开发者关于微信小程序的appSecret
-    # 向微信接口服务发送请求
-    api = 'https://api.weixin.qq.com/sns/jscode2session?appid='+appid+'&secret='+appSercet+'&js_code='+code+'&grant_type=authorization_code'
-    response_data = request.get(api)
-    resData = response_data.json()
-    openid = resData['openid']  # 得到用户关于当前小程序的OpenID
-    session_key = resData['session_key']  # 得到用户关于当前小程序的会话密钥session_key
-    # 下面生成自定义状态：token，用session_key和openid,
-    token = generate_token(openid+session_key, expire=3600)
-    message = (
-        {'status': 'fail',
-         'token':token
-        }
-    )
-    return jsonify(message)
+
+# #获得token，key: str (用户给定的key，需要用户保存以便之后验证token,每次产生token时的key 都可以是同一个key)，expire: int(最大有效时间，单位为s)
+# def generate_token(key, expire=3600):
+#     ts_str = str(time.time() + expire)
+#     ts_byte = ts_str.encode("utf-8")        #时间戳
+#     sha1_tshexstr = hmac.new(key.encode("utf-8"),ts_byte,'sha1').hexdigest()
+#     token = ts_str+':'+sha1_tshexstr
+#     b64_token = base64.urlsafe_b64encode(token.encode("utf-8"))
+#     return b64_token.decode("utf-8")
+#
+# # 验证token
+# def certify_token(key, token):
+#     token_str = base64.urlsafe_b64decode(token).decode('utf-8')     #解码
+#     token_list = token_str.split(':')
+#     if len(token_list) != 2:
+#         return False
+#     ts_str = token_list[0]
+#     if float(ts_str) < time.time(): #判断是否过期
+#     # token expired
+#         return False
+#     known_sha1_tsstr = token_list[1]
+#     sha1 = hmac.new(key.encode("utf-8"),ts_str.encode('utf-8'),'sha1')
+#     calc_sha1_tsstr = sha1.hexdigest()
+#     if calc_sha1_tsstr != known_sha1_tsstr:
+#     # token certification failed
+#         return False
+#     # token certification success
+#     else:
+#         return True
+#
+# # 登录注册
+# @app.route('/login', methods = ['POST'])
+# def login():
+#     data = json.loads(request.get_data(as_text=True))
+#     code = data['code']
+#     appid = 'appID'  # 开发者关于微信小程序的appID
+#     appSercet = 'appSecret'  # 开发者关于微信小程序的appSecret
+#     # 向微信接口服务发送请求
+#     api = 'https://api.weixin.qq.com/sns/jscode2session?appid='+appid+'&secret='+appSercet+'&js_code='+code+'&grant_type=authorization_code'
+#     response_data = request.get(api)
+#     resData = response_data.json()
+#     openid = resData['openid']  # 得到用户关于当前小程序的OpenID
+#     session_key = resData['session_key']  # 得到用户关于当前小程序的会话密钥session_key
+#     # 下面生成自定义状态：token，用session_key和openid,
+#     token = generate_token(openid+session_key, expire=3600)
+#     message = (
+#         {'status': 'fail',
+#          'token':token
+#         }
+#     )
+#     return jsonify(message)
 
 
 
