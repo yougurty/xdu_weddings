@@ -19,7 +19,7 @@ def connectdb():
     db = pymysql.connect(host='101.35.85.119',
                         user='root',
                         password='Xsy123456',
-                        database='EXP')
+                        database='MInvitation')
     # #db = pymysql.connect(host='localhost',
     #                      user='root',
     #                      password='539625jsy!',
@@ -30,11 +30,17 @@ def connectdb():
 # 插入一条新的留言
 @app.route('/msgs', methods = ['POST'])
 def addnew_msg():  # put application's code here
+    print("进入新增留言板接口")
     global data
     if request.method == 'POST':
         try:
             print("测试")
-            
+            # post_data = request.get_json()
+            # print(request.args)
+            # post_data = request.values;
+            # print(post_data)
+            # post_data = json.loads(request.get_data(as_text=True))
+            # print(post_data)
             post_data = json.loads(request.get_data().decode('utf-8'))
             wedding_id = post_data[0]['wedding_id']
             print(wedding_id)
@@ -66,12 +72,15 @@ def addnew_msg():  # put application's code here
 # 获取所有留言
 @app.route('/msgs', methods = ['GET'])
 def get_all_msg():
+    data = request.values
+    wedding_id = data['wedding_id']
     db = connectdb()
     cursor = db.cursor(cursor=pymysql.cursors.DictCursor) # 想返回字典格式，只需要在建立游标的时候加个参数，cursor=pymysql.cursors.DictCursor。这样每行返回的值放在字典里面，然后整体放在一个list里面。
-    sql = 'select * from messages'
-    cursor.execute(sql)
+    sql = 'select * from messages where wedding_id = %s'
+    cursor.execute(sql, wedding_id)
     result = cursor.fetchall()
     print(result)
+    cursor.close()
     db.close()
     return jsonify(result)
 
@@ -83,13 +92,17 @@ def find_weddings():
     wedding_id = data['wedding_id']
     db = connectdb()
     c = db.cursor()
-    c.execute('select wedding_id,nickname from weddings where wedding_id = %s', wedding_id)
-    if c.fetchone() == None:    # 获取符合条件的第一个值的所有信息,返回结果类型为元组，如果查询不到，则返回None
+    c.execute('select wedding_id,host_name from weddings where wedding_id = %s', wedding_id)
+    print(wedding_id)
+    temp = c.fetchone()
+    print(temp)
+    if temp == None:    # 获取符合条件的第一个值的所有信息,返回结果类型为元组，如果查询不到，则返回None
         a = 0
     else:
         a = 1
     c.close()
     db.close()
+    print(a)
     if a == 1:
         return jsonify({'status': 'success'})
     else:
@@ -120,12 +133,6 @@ def navigator():
         "content": content
     }
     return jsonify(data)
-#
-# @app.route("/test", methods = ['GET'])
-# def test():
-#     code = generate_verification_code(True)
-#     print(code)
-#     return code
 
 #随机生成六位数的wedding_id
 def generate_weddingid(isnum):
@@ -144,6 +151,45 @@ def generate_weddingid(isnum):
     myslice = random.sample(code_list, 6)  # 从list中随机获取6个元素，作为一个片断返回
     verification_code = ''.join(myslice)  # list to string
     return verification_code
+
+# 主人新建婚礼，要给出主人的昵称，位置地点。
+@app.route('/createnew', methods = ['POST'])
+def create_wedding():
+    if request.method == 'POST':
+        post_data = json.loads(request.get_data().decode('utf-8'))
+        host_name = post_data[0]['nickname']
+        # 要给出经纬度，再详谈吧
+        # 存到数据库里，然后随机生成一个wedding_id
+        wedding_id = generate_weddingid(True)
+        db = connectdb()
+        c = db.cursor()
+        c.execute('select wedding_id from weddings where wedding_id = %s', wedding_id)
+        while c.fetchone() != None :
+            wedding_id = generate_weddingid(True)
+        # 存wedding_id和host_name到数据库中
+        try:
+            sql = "INSERT INTO `weddings` (`wedding_id`, `host_name`) VALUES (%s, %s)"
+            c.execute(sql, (wedding_id, host_name))
+            db.commit()
+            print(数据提交到weddings成功)
+        except Exception as e:
+            traceback.print.exc()
+            return jsonify({'status':'fail'})
+        finally:
+            db.close()
+            print("结束了")
+        result = (
+            {
+                'wedding_id': wedding_id,
+                'status': 'success'
+            }
+        )
+    return jsonify(result)
+
+
+
+
+
 
 
 
