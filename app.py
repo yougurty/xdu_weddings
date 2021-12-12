@@ -5,6 +5,8 @@ import traceback
 import datetime
 from hashlib import md5
 import time
+import random
+
 from flask import Flask,request,jsonify
 import pymysql
 
@@ -14,11 +16,14 @@ def connectdb():
     print('连接到mysql服务器...')
     # 打开数据库连接
     # 用户名:hp, 密码:Hp12345.,用户名和密码需要改成你自己的mysql用户名和密码，并且要创建数据库TESTDB，并在TESTDB数据库中创建好表Student
-    #db = pymysql.connect("101.35.85.119","root","Xsy123456.","EXP");
-    db = pymysql.connect(host='localhost',
-                         user='root',
-                         password='539625jsy!',
-                         database='SJ')
+    db = pymysql.connect(host='101.35.85.119',
+                        user='root',
+                        password='Xsy123456',
+                        database='EXP')
+    # #db = pymysql.connect(host='localhost',
+    #                      user='root',
+    #                      password='539625jsy!',
+    #                      database='SJ')
     print('连接上了!')
     return db
 
@@ -29,12 +34,7 @@ def addnew_msg():  # put application's code here
     if request.method == 'POST':
         try:
             print("测试")
-            # post_data = request.get_json()
-            # print(request.args)
-            # post_data = request.values;
-            # print(post_data)
-            # post_data = json.loads(request.get_data(as_text=True))
-            # print(post_data)
+            
             post_data = json.loads(request.get_data().decode('utf-8'))
             wedding_id = post_data[0]['wedding_id']
             print(wedding_id)
@@ -103,23 +103,48 @@ def navigator():
     print(wedding_id)
     db = connectdb()
     c = db.cursor()
-    c.execute('select longtitute,latitute,content from navigation where wedding_id = %s', wedding_id)
+    c.execute('select longitude,latitude,content from navigation where wedding_id = %s', wedding_id)
     result = c.fetchone()   #获取到经纬度和内容
     print(result)
-    longtitute = result[0]
-    print(longtitute)
-    latitute = result[1]
-    print(latitute)
+    longitude = result[0]
+    print(longitude)
+    latitude = result[1]
+    print(latitude)
     content = result[2]
     print(content)
     c.close()
     db.close()
     data = {
-        "longtitute": longtitute,
-        "latitute": latitute,
+        "longitude": longitude,
+        "latitude": latitude,
         "content": content
     }
     return jsonify(data)
+#
+# @app.route("/test", methods = ['GET'])
+# def test():
+#     code = generate_verification_code(True)
+#     print(code)
+#     return code
+
+#随机生成六位数的wedding_id
+def generate_weddingid(isnum):
+    # ''' 随机生成6位的验证码 '''
+    code_list = []
+    if isnum == True:
+        for i in range(10):  # 0-9数字
+            code_list.append(str(i))
+    else:
+        for i in range(10):  # 0-9数字
+            code_list.append(str(i))
+        for i in range(65, 91):  # A-Z
+            code_list.append(chr(i))
+        for i in range(97, 123):  # a-z
+            code_list.append(chr(i))
+    myslice = random.sample(code_list, 6)  # 从list中随机获取6个元素，作为一个片断返回
+    verification_code = ''.join(myslice)  # list to string
+    return verification_code
+
 
 
 # #获得token，key: str (用户给定的key，需要用户保存以便之后验证token,每次产生token时的key 都可以是同一个key)，expire: int(最大有效时间，单位为s)
@@ -178,6 +203,7 @@ def navigator():
 
 @app.route('/')
 def hello():
+    connectdb()
     return "<p>Hello, World!</p>"
 
 
