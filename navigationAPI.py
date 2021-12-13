@@ -69,3 +69,25 @@ def navigator_post():
         print("结束了")
         return jsonify({'status': 'success'})
 
+# 可以改
+@navigationAPI.route('/navigation', methods = ['PUT'])
+def navigator_put():
+    if request.method == 'PUT':
+        put_data = json.loads(request.get_data().decode('utf-8'))
+        longitude = put_data[0]['longitude']
+        latitude = put_data[0]['latitude']
+        content = put_data[0]['content']
+        wedding_id = put_data[0]['wedding_id']
+        db = connectdb()
+        c = db.cursor()
+        try:
+            c.execute('update navigation set longitude=%s,latitude=%s,content=%s where wedding_id=%s', (longitude,latitude,content,wedding_id))
+            db.commit()
+            print('数据update到navigation成功')
+        except Exception as e:
+            traceback.print.exc()
+            return jsonify({'status': 'fail'})
+        c.close()
+        db.close()
+        return jsonify({'status': 'success'})
+

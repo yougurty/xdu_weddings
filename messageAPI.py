@@ -40,7 +40,7 @@ def addnew_msg():  # put application's code here
             wedding_id = post_data[0]['wedding_id']
             print(wedding_id)
             nickname = post_data[0]['nickname']
-            headshots = post_data[0]['headshots']
+            avatarUrl = post_data[0]['avatarUrl']
             context = post_data[0]['context']
             time = datetime.datetime.now().strftime('%Y-%m-%d %T')
             print(time)
@@ -48,8 +48,8 @@ def addnew_msg():  # put application's code here
             try:
                 with db.cursor() as cursor:
                     # 创建一条新的记录
-                    sql = "INSERT INTO `messages` (`wedding_id`, `nickname`,`headshots`,`context`,`time`) VALUES (%s, %s, %s, %s, %s)"
-                    cursor.execute(sql, (wedding_id, nickname, headshots, context, time))
+                    sql = "INSERT INTO `messages` (`wedding_id`, `nickname`,`avatarUrl`,`context`,`time`) VALUES (%s, %s, %s, %s, %s)"
+                    cursor.execute(sql, (wedding_id, nickname, avatarUrl, context, time))
                     print("有没有查询")
                 db.commit()
                 print("有没有提交")
@@ -64,17 +64,29 @@ def addnew_msg():  # put application's code here
         else:
             return jsonify(message)
 
-# 获取所有留言
+# # 获取所有留言
 @messageAPI.route('/msgs', methods = ['GET'])
 def get_all_msg():
     data = request.values
     wedding_id = data['wedding_id']
+    pageStr = data['page'];        #页码
+    page = int(pageStr)
+    print(type(page))
     db = connectdb()
     cursor = db.cursor(cursor=pymysql.cursors.DictCursor) # 想返回字典格式，只需要在建立游标的时候加个参数，cursor=pymysql.cursors.DictCursor。这样每行返回的值放在字典里面，然后整体放在一个list里面。
     sql = 'select * from messages where wedding_id = %s'
     cursor.execute(sql, wedding_id)
     result = cursor.fetchall()
-    print(result)
+    msgNumber  = len(result)        #留言的总数
+    # 创建一个页的列表
+    listPage = []
+    if msgNumber > page*6-1:
+        listPage = [result[page*6-6],result[page*6-5],result[page*6-4],result[page*6-3],result[page*6-2],result[page*6-1],{"msgNumber": msgNumber}]
+    else :
+        for i in range(page*6-6, msgNumber):
+            listPage.append(result[i])
+        listPage.append({"msgNumber": msgNumber})
+
     cursor.close()
     db.close()
-    return jsonify(result)
+    return jsonify(listPage)
