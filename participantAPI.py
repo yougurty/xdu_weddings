@@ -56,3 +56,27 @@ def participant_post():
         print("结束了")
         return jsonify({'status': 'success'})
 
+# # 更新参会人员
+# @participantAPI.route('/participants', methods = ['PUT'])
+# def participant_put():
+#     if request.method == 'PUT':
+#         put_data = json.loads(request.get_data().decode('utf-8'))
+#         phoneNumber = put_data[0]['phoneNumber']
+#         realName = put_data[0]['realName']
+#         wedding_id = put_data[0]['wedding_id']
+#         attendance = put_data[0]['attendance']
+#         db = connectdb()
+#         c = db.cursor()
+#         try:
+#             # 这样写不对
+#             c.execute('update participants set phoneNumber=%s,realName=%s,attendance=%s where wedding_id=%s', (phoneNumber, realName, attendance, wedding_id))
+#             db.commit()
+#             print('数据update到participants成功')
+#         except Exception as e:
+#             traceback.print.exc()
+#             return jsonify({'status': 'fail'})
+#         c.close()
+#         db.close()
+#         return jsonify({'status': 'success'})
+
+

@@ -66,3 +66,23 @@ def invitation_post():
         db.close()
         print("结束了")
         return jsonify({'status': 'success'})
+
+# 更新邀请函信息
+@invitationAPI.route('/invitations', methods = ['PUT'])
+def participant_put():
+    if request.method == 'PUT':
+        put_data = json.loads(request.get_data().decode('utf-8'))
+        invitationUrl = put_data[0]['invitationUrl']
+        wedding_id = put_data[0]['wedding_id']
+        db = connectdb()
+        c = db.cursor()
+        try:
+            c.execute('update invitations set invitationUrl=%s where wedding_id=%s', (invitationUrl, wedding_id))
+            db.commit()
+            print('数据update到invitations成功')
+        except Exception as e:
+            traceback.print.exc()
+            return jsonify({'status': 'fail'})
+        c.close()
+        db.close()
+        return jsonify({'status': 'success'})
