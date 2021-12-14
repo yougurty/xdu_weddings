@@ -42,11 +42,12 @@ def participant_post():
         phoneNumber = post_data[0]['phoneNumber']
         realName = post_data[0]['realName']
         attendance = post_data[0]['attendance']
+        note = post_data[0]['note']
         db = connectdb()
         c = db.cursor()
         try:
-            sql = "INSERT INTO `participants` (`wedding_id`, `phoneNumber`,`realName`,`attendance`) VALUES (%s, %s, %s, %s)"
-            c.execute(sql, (wedding_id, phoneNumber, realName, attendance))
+            sql = "INSERT INTO `participants` (`wedding_id`, `phoneNumber`,`realName`,`attendance`,`note`) VALUES (%s, %s, %s, %s, %s)"
+            c.execute(sql, (wedding_id, phoneNumber, realName, attendance, note))
             db.commit()
             print('数据提交到participants成功')
         except Exception as e:

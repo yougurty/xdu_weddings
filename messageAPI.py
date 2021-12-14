@@ -78,8 +78,12 @@ def get_all_msg():
     cursor.execute(sql, wedding_id)
     result = cursor.fetchall()
     msgNumber  = len(result)        #留言的总数
+    print(result)
+    result.reverse()
+    print(result)
     # 创建一个页的列表
     listPage = []
+    print(type(listPage))
     if msgNumber > page*6-1:
         listPage = [result[page*6-6],result[page*6-5],result[page*6-4],result[page*6-3],result[page*6-2],result[page*6-1],{"msgNumber": msgNumber}]
     else :
