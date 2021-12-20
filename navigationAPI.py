@@ -15,10 +15,6 @@ def connectdb():
                         user='root',
                         password='Xsy123456',
                         database='MInvitation')
-    # #db = pymysql.connect(host='localhost',
-    #                      user='root',
-    #                      password='539625jsy!',
-    #                      database='SJ')
     print('连接上了!')
     return db
 

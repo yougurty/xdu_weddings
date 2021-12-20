@@ -22,9 +22,13 @@ def connectdb():
 def participant_get():
     data = request.values
     wedding_id = data['wedding_id']
-    print(wedding_id)
+    hostname = data['hostname']
+    print(hostname)
     db = connectdb()
     cursor = db.cursor(cursor=pymysql.cursors.DictCursor)  # 想返回字典格式，只需要在建立游标的时候加个参数，cursor=pymysql.cursors.DictCursor。这样每行返回的值放在字典里面，然后整体放在一个list里面。
+    cursor.execute('select * from weddings where wedding_id = %s and hostname = %s', (wedding_id, hostname))
+    if cursor.fetchone() == None:
+        return jsonify({'status': 'fail'})
     sql = 'select * from participants where wedding_id = %s'
     cursor.execute(sql, wedding_id)
     result = cursor.fetchall()
@@ -56,28 +60,3 @@ def participant_post():
         db.close()
         print("结束了")
         return jsonify({'status': 'success'})
-
-# # 更新参会人员
-# @participantAPI.route('/participants', methods = ['PUT'])
-# def participant_put():
-#     if request.method == 'PUT':
-#         put_data = json.loads(request.get_data().decode('utf-8'))
-#         phoneNumber = put_data[0]['phoneNumber']
-#         realName = put_data[0]['realName']
-#         wedding_id = put_data[0]['wedding_id']
-#         attendance = put_data[0]['attendance']
-#         db = connectdb()
-#         c = db.cursor()
-#         try:
-#             # 这样写不对
-#             c.execute('update participants set phoneNumber=%s,realName=%s,attendance=%s where wedding_id=%s', (phoneNumber, realName, attendance, wedding_id))
-#             db.commit()
-#             print('数据update到participants成功')
-#         except Exception as e:
-#             traceback.print.exc()
-#             return jsonify({'status': 'fail'})
-#         c.close()
-#         db.close()
-#         return jsonify({'status': 'success'})
-
-

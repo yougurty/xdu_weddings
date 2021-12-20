@@ -15,10 +15,6 @@ def connectdb():
                         user='root',
                         password='Xsy123456',
                         database='MInvitation')
-    # #db = pymysql.connect(host='localhost',
-    #                      user='root',
-    #                      password='539625jsy!',
-    #                      database='SJ')
     print('连接上了!')
     return db
 
@@ -30,12 +26,6 @@ def addnew_msg():  # put application's code here
     if request.method == 'POST':
         try:
             print("测试")
-            # post_data = request.get_json()
-            # print(request.args)
-            # post_data = request.values;
-            # print(post_data)
-            # post_data = json.loads(request.get_data(as_text=True))
-            # print(post_data)
             post_data = json.loads(request.get_data().decode('utf-8'))
             wedding_id = post_data[0]['wedding_id']
             print(wedding_id)
@@ -68,8 +58,8 @@ def addnew_msg():  # put application's code here
 @messageAPI.route('/msgs', methods = ['GET'])
 def get_all_msg():
     data = request.values
-    wedding_id = data['wedding_id']
-    pageStr = data['page'];        #页码
+    wedding_id = data[0]['wedding_id']
+    pageStr = data[0]['page'];        #页码
     page = int(pageStr)
     print(type(page))
     db = connectdb()
@@ -77,13 +67,10 @@ def get_all_msg():
     sql = 'select * from messages where wedding_id = %s'
     cursor.execute(sql, wedding_id)
     result = cursor.fetchall()
-    msgNumber  = len(result)        #留言的总数
-    print(result)
     result.reverse()
-    print(result)
+    msgNumber  = len(result)        #留言的总数
     # 创建一个页的列表
     listPage = []
-    print(type(listPage))
     if msgNumber > page*6-1:
         listPage = [result[page*6-6],result[page*6-5],result[page*6-4],result[page*6-3],result[page*6-2],result[page*6-1],{"msgNumber": msgNumber}]
     else :
